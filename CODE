@@ -1,0 +1,230 @@
+import tkinter as tk
+from tkinter import ttk, messagebox
+from PIL import Image, ImageTk
+import requests
+import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
+# API key
+API_KEY = "Enter your API"
+
+# Color theme
+BG_COLOR = "#3B82F6"
+CARD_COLOR = "#EBF5FB"
+BORDER_COLOR = "#AED6F1"
+TEXT_COLOR = "#1B4F72"
+
+root = tk.Tk()
+root.title("WEATHER DATA ANALYZER")
+root.geometry("900x720")
+
+
+try:
+    bg_image = Image.open("background.png")
+except Exception:
+    bg_image = None
+
+
+def resize_bg(event):
+    if bg_image:
+        img = bg_image.resize((event.width, event.height))
+        global bg_photo
+        bg_photo = ImageTk.PhotoImage(img)
+        bg_label.config(image=bg_photo)
+
+
+bg_label = tk.Label(root)
+bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+bg_label.lower()
+root.bind("<Configure>", resize_bg)
+
+# Global variables
+chart_canvas = None
+weather_df = None
+
+
+
+def fetch_weather():
+    global chart_canvas, weather_df
+
+    city_name = city_entry.get().strip()
+    if city_name == "":
+        messagebox.showwarning("Warning", "Please enter a city name!")
+        return
+
+    current_url = f"https://api.openweathermap.org/data/2.5/weather?q={city_name}&appid={API_KEY}&units=metric"
+    forecast_url = f"https://api.openweathermap.org/data/2.5/forecast?q={city_name}&appid={API_KEY}&units=metric"
+
+    try:
+        current_response = requests.get(current_url).json()
+        if current_response.get("cod") != 200:
+            messagebox.showerror("Error", "City not found!")
+            return
+
+        forecast_response = requests.get(forecast_url).json()
+
+        # Extract current weather
+        temp = current_response["main"]["temp"]
+        humidity = current_response["main"]["humidity"]
+        wind_speed = current_response["wind"]["speed"]
+        condition = current_response["weather"][0]["description"]
+
+        summary_label.config(
+            text=f"City: {city_name.title()}  |  Temp: {temp}°C  |  Humidity: {humidity}%  |  Wind: {wind_speed} m/s  |  Condition: {condition.title()}"
+        )
+
+        # 1. Process Forecast Data with Pandas
+        forecast_data = forecast_response["list"][:8]
+
+        table_rows = []
+        for item in forecast_data:
+            time_str = item["dt_txt"].split(" ")[1][:5]
+            t = item["main"]["temp"]
+            h = item["main"]["humidity"]
+            w = item["wind"]["speed"]
+            table_rows.append({"Time": time_str, "Temperature (°C)": t, "Humidity (%)": h, "Wind Speed (m/s)": w})
+
+        weather_df = pd.DataFrame(table_rows)
+
+        # Calculate analytics
+        max_temp = weather_df["Temperature (°C)"].max()
+        min_temp = weather_df["Temperature (°C)"].min()
+        avg_humidity = weather_df["Humidity (%)"].mean()
+
+        stats_label.config(
+            text=f"📊 Analytics:  Max Temp: {max_temp}°C   |   Min Temp: {min_temp}°C   |   Avg Humidity: {avg_humidity:.1f}%"
+        )
+
+        # Update Weather Table
+        for row in weather_table.get_children():
+            weather_table.delete(row)
+
+        for _, row in weather_df.iterrows():
+            weather_table.insert("", "end", values=(row["Time"], row["Temperature (°C)"], row["Humidity (%)"],
+                                                    row["Wind Speed (m/s)"]))
+
+        # Update Chart
+        if chart_canvas:
+            chart_canvas.get_tk_widget().destroy()
+
+        fig, ax = plt.subplots(figsize=(7, 3.2), dpi=100)
+
+        fig.patch.set_facecolor(CARD_COLOR)
+        ax.set_facecolor("#F4F9FD")
+
+        ax.plot(weather_df["Time"], weather_df["Temperature (°C)"], color="#1D4ED8", marker="o", linewidth=2.5,
+                markersize=6)
+        ax.set_title("24-Hour Temperature Trend Forecast", fontsize=11, fontweight="bold", color=TEXT_COLOR, pad=12)
+        ax.set_xlabel("Time (Hours)", color=TEXT_COLOR, fontsize=9, fontweight="bold")
+        ax.set_ylabel("Temperature (°C)", color=TEXT_COLOR, fontsize=9, fontweight="bold")
+        ax.tick_params(colors=TEXT_COLOR, labelsize=8.5)
+        ax.grid(True, linestyle="--", alpha=0.5, color="#A5C9CA")
+
+        chart_canvas = FigureCanvasTkAgg(fig, master=tab_chart)
+        chart_canvas.get_tk_widget().pack(fill="both", expand=True, padx=10, pady=10)
+        chart_canvas.draw()
+
+    except Exception:
+        messagebox.showerror("Error", "Something went wrong while fetching data.")
+
+
+
+def clear_data():
+    global chart_canvas, weather_df
+    city_entry.delete(0, tk.END)
+    summary_label.config(text="Enter a city name above to view analysis.")
+    stats_label.config(text="")
+    weather_df = None
+
+    for row in weather_table.get_children():
+        weather_table.delete(row)
+
+    if chart_canvas:
+        chart_canvas.get_tk_widget().destroy()
+
+
+
+def save_csv():
+    global weather_df
+    if weather_df is not None:
+        weather_df.to_csv("weather_report.csv", index=False)
+        messagebox.showinfo("Success", "Data saved to weather_report.csv!")
+    else:
+        messagebox.showwarning("Warning", "First analyze a city!")
+
+
+
+
+header_frame = tk.Frame(root, bg=BG_COLOR)
+header_frame.pack(fill="x", pady=0)
+
+title_label = tk.Label(header_frame, text="☁ WEATHER DATA ANALYZER ☀", font=("Arial", 18, "bold"), bg=BG_COLOR,
+                       fg="white")
+title_label.pack(pady=12)
+
+
+input_frame = tk.Frame(root, bg=CARD_COLOR, padx=15, pady=10, highlightbackground=BORDER_COLOR, highlightthickness=1)
+input_frame.pack(pady=12)
+
+tk.Label(input_frame, text="Enter City:", font=("Arial", 11, "bold"), bg=CARD_COLOR, fg=TEXT_COLOR).grid(row=0,
+                                                                                                         column=0,
+                                                                                                         padx=5)
+
+city_entry = tk.Entry(input_frame, width=20, font=("Arial", 11), relief="solid", bd=1)
+city_entry.grid(row=0, column=1, padx=5)
+city_entry.bind('<Return>', lambda e: fetch_weather())
+
+fetch_btn = tk.Button(input_frame, text="Analyze Weather", font=("Arial", 10, "bold"), bg="#2563EB", fg="white",
+                      relief="flat", command=fetch_weather, cursor="hand2")
+fetch_btn.grid(row=0, column=2, padx=5)
+
+export_btn = tk.Button(input_frame, text="Export CSV", font=("Arial", 10, "bold"), bg="#16A34A", fg="white",
+                       relief="flat", command=save_csv, cursor="hand2")
+export_btn.grid(row=0, column=3, padx=5)
+
+clear_btn = tk.Button(input_frame, text="Clear", font=("Arial", 10, "bold"), bg="#DC2626", fg="white", relief="flat",
+                      command=clear_data, cursor="hand2")
+clear_btn.grid(row=0, column=4, padx=5)
+
+# Summary output section
+result_frame = tk.Frame(root, bg=CARD_COLOR, padx=15, pady=8, highlightbackground=BORDER_COLOR, highlightthickness=1)
+result_frame.pack(fill="x", padx=35, pady=2)
+
+summary_label = tk.Label(result_frame, text="Enter a city name above to view analysis.", font=("Arial", 10),
+                         bg=CARD_COLOR, fg=TEXT_COLOR)
+summary_label.pack()
+
+stats_label = tk.Label(result_frame, text="", font=("Arial", 10, "bold"), bg=CARD_COLOR, fg="#1E40AF")
+stats_label.pack(pady=2)
+
+# two tabs addition in gui
+style = ttk.Style()
+style.theme_use('default')
+style.configure("TNotebook", background=CARD_COLOR, borderwidth=0)
+style.configure("TNotebook.Tab", background="#D4E6F1", foreground=TEXT_COLOR, padding=[12, 5],
+                font=('Arial', 10, 'bold'))
+style.map("TNotebook.Tab", background=[("selected", CARD_COLOR)])
+
+notebook = ttk.Notebook(root)
+notebook.pack(fill="both", expand=True, padx=35, pady=12)
+
+# Tab 1: Chart
+tab_chart = tk.Frame(notebook, bg=CARD_COLOR)
+notebook.add(tab_chart, text=" 📊 Temperature Chart ")
+
+# Tab 2: Table
+tab_table = tk.Frame(notebook, bg=CARD_COLOR)
+notebook.add(tab_table, text=" 📋 Data Table ")
+
+# Data table setup
+columns = ("Time", "Temp (°C)", "Humidity (%)", "Wind (m/s)")
+weather_table = ttk.Treeview(tab_table, columns=columns, show="headings", height=8)
+
+for col in columns:
+    weather_table.heading(col, text=col)
+    weather_table.column(col, anchor="center", width=120)
+
+weather_table.pack(fill="both", expand=True, padx=15, pady=15)
+
+root.mainloop()
