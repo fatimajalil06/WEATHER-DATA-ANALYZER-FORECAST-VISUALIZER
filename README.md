@@ -4,7 +4,7 @@ I built the Weather Data Analyzer, a Python desktop app using Tkinter, Pandas, a
 
 A responsive Python desktop application designed to fetch real-time weather metrics and 24-hour forecast data via the OpenWeatherMap REST API. The app processes data using Pandas, computes key statistical metrics, and visualizes trends using embedded Matplotlib plots within a tabbed Tkinter interface.
 
-## 🌟 Key Features
+## Key Features
 
  **Real-Time API Integration:** Fetches live temperature, humidity, wind speed, and weather conditions via OpenWeatherMap HTTP GET requests.
 **Pandas Analytics:** Automatically calculates maximum/minimum temperatures and average humidity across a 24-hour forecast window.
@@ -28,7 +28,7 @@ A responsive Python desktop application designed to fetch real-time weather metr
 
 
 
-## 📁 Repository Structure
+## Repository Structure
 
 ├── background.png        # Background wallpaper image
 ├── weather_analyzer.py   # Main Python application script
