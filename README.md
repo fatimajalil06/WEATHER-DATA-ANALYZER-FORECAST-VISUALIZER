@@ -15,7 +15,7 @@ A responsive Python desktop application designed to fetch real-time weather metr
 
 ---
 
-## 🛠️ Tech Stack & Architecture
+##  Tech Stack & Architecture
 
 | Component | Library / Framework | Purpose |
 
