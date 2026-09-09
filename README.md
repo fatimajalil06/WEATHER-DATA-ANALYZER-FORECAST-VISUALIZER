@@ -15,6 +15,18 @@ A responsive Python desktop application designed to fetch real-time weather metr
 
 ---
 
+
+##  Tech Stack & Architecture
+
+| Component | Library / Framework | Purpose |
+
+| **GUI Framework** | `tkinter`, `ttk` | Window layout, tabbed navigation, and data table view |
+| **Data Processing** | `pandas` | Parsing JSON payloads, data structuring, and statistical calculations |
+| **Data Visualization** | `matplotlib` | Time-series line plotting using Object-Oriented (`fig, ax`) approach |
+| **GUI Integration** | `FigureCanvasTkAgg` | Embedding Matplotlib canvas objects into Tkinter frames |
+| **API & Networking** | `requests` | Fetching live weather data from OpenWeatherMap REST API |
+| **Image Processing** | `Pillow` (`PIL`) | Dynamic background image loading and resizing |
+
 ## Future Improvements
 
 * Extended 7-Day and 14-Day Forecast Analysis
@@ -28,20 +40,6 @@ A responsive Python desktop application designed to fetch real-time weather metr
 * Customizable Dashboard
 * Cloud Data Synchronization
 * Machine Learning-Based Weather Prediction
-
-
-##  Tech Stack & Architecture
-
-| Component | Library / Framework | Purpose |
-
-| **GUI Framework** | `tkinter`, `ttk` | Window layout, tabbed navigation, and data table view |
-| **Data Processing** | `pandas` | Parsing JSON payloads, data structuring, and statistical calculations |
-| **Data Visualization** | `matplotlib` | Time-series line plotting using Object-Oriented (`fig, ax`) approach |
-| **GUI Integration** | `FigureCanvasTkAgg` | Embedding Matplotlib canvas objects into Tkinter frames |
-| **API & Networking** | `requests` | Fetching live weather data from OpenWeatherMap REST API |
-| **Image Processing** | `Pillow` (`PIL`) | Dynamic background image loading and resizing |
-
-
 
 ## Repository Structure
 
