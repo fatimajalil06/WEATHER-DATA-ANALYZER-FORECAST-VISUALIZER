@@ -15,6 +15,21 @@ A responsive Python desktop application designed to fetch real-time weather metr
 
 ---
 
+## Future Improvements
+
+* Extended 7-Day and 14-Day Forecast Analysis
+* Historical Weather Data Storage
+* Advanced Data Visualization
+* Weather Alerts and Notifications
+* Automatic Data Refresh
+* Location-Based Weather Detection
+* Enhanced Weather Analytics
+* Improved API Error Handling
+* Customizable Dashboard
+* Cloud Data Synchronization
+* Machine Learning-Based Weather Prediction
+
+
 ##  Tech Stack & Architecture
 
 | Component | Library / Framework | Purpose |
